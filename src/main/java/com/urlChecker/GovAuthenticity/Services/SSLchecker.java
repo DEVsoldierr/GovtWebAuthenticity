@@ -1,3 +1,4 @@
+/*
 package com.urlChecker.GovAuthenticity.Services;
 import com.urlChecker.GovAuthenticity.DTO.SSLDetailsDTO;
 import org.springframework.stereotype.Service;
@@ -39,3 +40,4 @@ public class SSLchecker {
 
     }
 }
+*/
