@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Govt Website Authenticity</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-bottom: 20px;
+        }
+
+        .service-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .service-item {
+            background: #3498db;
+            color: white;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .service-item:hover {
+            background: #2980b9;
+        }
+
+        input {
+            width: 80%;
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: #3498db;
+            box-shadow: 0px 0px 5px rgba(52, 152, 219, 0.5);
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Home Page -->
+<div class="container" id="homePage">
+    <h2>Select a Service</h2>
+    <ul class="service-list">
+        <li class="service-item" onclick="selectService('combined')">Combined SSL & WHOIS Check</li>
+        <li class="service-item" onclick="selectService('ssl')">SSL Certificate Check (Dummy)</li>
+        <li class="service-item" onclick="selectService('whois')">WHOIS Lookup (Dummy)</li>
+    </ul>
+</div>
+
+<!-- Service Page -->
+<div class="container hidden" id="servicePage">
+    <h2 id="serviceTitle">Service Name</h2>
+    <input type="text" id="urlInput" placeholder="Enter website URL">
+    <button onclick="checkWebsite()">Check</button>
+    <div class="loader" id="loader"></div>
+    <div id="errorMessage" class="error"></div>
+</div>
+
+<!-- Result Page -->
+<div class="container hidden" id="resultPage">
+    <h2>Results</h2>
+    <div id="resultData"></div>
+    <button onclick="goHome()">Back to Home</button>
+</div>
+
+<script>
+    let selectedService = '';
+
+    // Navigate to Service Page
+    function selectService(service) {
+        selectedService = service;
+        document.getElementById('homePage').classList.add('hidden');
+        document.getElementById('servicePage').classList.remove('hidden');
+
+        let serviceTitle = 'Service Name';
+        if (service === 'combined') serviceTitle = 'Combined SSL & WHOIS Check';
+        if (service === 'ssl') serviceTitle = 'SSL Certificate Check (Dummy)';
+        if (service === 'whois') serviceTitle = 'WHOIS Lookup (Dummy)';
+
+        document.getElementById('serviceTitle').innerText = serviceTitle;
+    }
+
+    // Check Website
+    function checkWebsite() {
+        const url = document.getElementById('urlInput').value;
+        const loader = document.getElementById('loader');
+        const errorMessage = document.getElementById('errorMessage');
+
+        loader.style.display = "block";
+        errorMessage.innerText = '';
+
+        if (!url) {
+            loader.style.display = "none";
+            errorMessage.innerText = "Please enter a valid URL.";
+            return;
+        }
+
+        if (selectedService === 'ssl' || selectedService === 'whois') {
+            setTimeout(() => {
+                loader.style.display = "none";
+                showResult(`This is a dummy response for the ${selectedService} service.`);
+            }, 1000);
+            return;
+        }
+
+        fetch(`/api/combined-check/check?url=${encodeURIComponent(url)}`)
+            .then(response => {
+                loader.style.display = "none";
+
+                if (response.status === 404) {
+                    throw new Error("Server error");
+                } else if (response.status === 500) {
+                    throw new Error("The input URL is not correct");
+                }
+                return response.json();
+            })
+            .then(data => {
+                showResult(`
+                    <p><strong>SSL Details:</strong> <pre>${JSON.stringify(data.SSL_Details, null, 2)}</pre></p>
+                    <p><strong>WHOIS Data:</strong> ${data.WHOIS_Data}</p>
+                `);
+            })
+            .catch(error => {
+                loader.style.display = "none";
+                errorMessage.innerText = error.message;
+            });
+    }
+
+    // Show Results Page
+    function showResult(htmlContent) {
+        document.getElementById('servicePage').classList.add('hidden');
+        document.getElementById('resultPage').classList.remove('hidden');
+        document.getElementById('resultData').innerHTML = htmlContent;
+    }
+
+    // Go Back to Home
+    function goHome() {
+        document.getElementById('resultPage').classList.add('hidden');
+        document.getElementById('homePage').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

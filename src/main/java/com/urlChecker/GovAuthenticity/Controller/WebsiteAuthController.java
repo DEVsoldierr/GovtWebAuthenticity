@@ -1,7 +1,7 @@
 package com.urlChecker.GovAuthenticity.Controller;
 
 import com.urlChecker.GovAuthenticity.DTO.SSLDetailsDTO;
-import com.urlChecker.GovAuthenticity.Services.SSLchecker;
+
 import com.urlChecker.GovAuthenticity.Services.SSLchecker2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
